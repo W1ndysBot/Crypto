@@ -1,0 +1,52 @@
+import base64
+import logging
+import re
+import os
+import sys
+
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
+
+from app.api import send_group_msg, send_private_msg
+
+
+async def handle_crypto_group_message(websocket, msg):
+    try:
+        user_id = msg["user_id"]
+        group_id = msg["group_id"]
+        raw_message = msg["raw_message"]
+        role = msg["sender"]["role"]
+        message_id = int(msg["message_id"])
+
+        # base64 编解码
+        if raw_message.startswith("b64decode "):
+            encoded_message = raw_message[len("b64decode ") :]
+            if re.match(r"^[A-Za-z0-9+/]+={0,2}$", encoded_message):
+                decoded_message = base64.b64decode(encoded_message).decode()
+                await send_group_msg(websocket, group_id, decoded_message)
+            else:
+                await send_group_msg(websocket, group_id, "无效的base64编码")
+
+    except Exception as e:
+        logging.error(f"处理编解码消息失败: {e}")
+        return
+
+
+async def handle_crypto_private_message(websocket, msg):
+    try:
+        user_id = msg["user_id"]
+        raw_message = msg["raw_message"]
+
+        # base64 编解码
+        if raw_message.startswith("b64decode "):
+            encoded_message = raw_message[len("b64decode ") :]
+            if re.match(r"^[A-Za-z0-9+/]+={0,2}$", encoded_message):
+                decoded_message = base64.b64decode(encoded_message).decode()
+                await send_private_msg(websocket, user_id, decoded_message)
+            else:
+                await send_private_msg(websocket, user_id, "无效的base64编码")
+
+    except Exception as e:
+        logging.error(f"处理编解码消息失败: {e}")
+        return
