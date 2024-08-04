@@ -11,6 +11,19 @@ sys.path.append(
 from app.api import send_group_msg, send_private_msg
 
 
+async def handle_crypto_help_message(websocket, group_id, user_id):
+    await send_group_msg(
+        websocket,
+        group_id,
+        """
+[CQ:at,qq={user_id}]
+编码解码功能如下：
+1. b64decode 解码base64编码
+2. b64encode 编码base64编码
+        """,
+    )
+
+
 async def handle_crypto_group_message(websocket, msg):
     try:
         user_id = msg["user_id"]
@@ -18,6 +31,10 @@ async def handle_crypto_group_message(websocket, msg):
         raw_message = msg["raw_message"]
         role = msg["sender"]["role"]
         message_id = int(msg["message_id"])
+
+        if raw_message == "编码解码":
+            await handle_crypto_help_message(websocket, group_id, user_id)
+            return
 
         # base64 编解码
         if raw_message.startswith("b64decode "):
