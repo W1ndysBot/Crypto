@@ -15,12 +15,10 @@ async def handle_crypto_help_message(websocket, group_id, user_id):
     await send_group_msg(
         websocket,
         group_id,
-        f"""
-[CQ:at,qq={user_id}]
+        f"""[CQ:at,qq={user_id}]
 编码解码功能如下：
 1. b64decode 解码base64编码
-2. b64encode 编码base64编码
-        """,
+2. b64encode 编码base64编码""",
     )
 
 
