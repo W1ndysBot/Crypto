@@ -24,10 +24,15 @@ async def handle_crypto_group_message(websocket, msg):
             encoded_message = raw_message[len("b64decode ") :]
             if re.match(r"^[A-Za-z0-9+/]+={0,2}$", encoded_message):
                 decoded_message = base64.b64decode(encoded_message).decode()
+                decoded_message = f"[CQ:at,qq={user_id}]解码结果如下\n{decoded_message}"
                 await send_group_msg(websocket, group_id, decoded_message)
             else:
                 await send_group_msg(websocket, group_id, "无效的base64编码")
-
+        elif raw_message.startswith("b64encode "):
+            decoded_message = raw_message[len("b64encode ") :]
+            encoded_message = base64.b64encode(decoded_message.encode()).decode()
+            encoded_message = f"[CQ:at,qq={user_id}]编码结果如下\n{encoded_message}"
+            await send_group_msg(websocket, group_id, encoded_message)
     except Exception as e:
         logging.error(f"处理编解码消息失败: {e}")
         return
