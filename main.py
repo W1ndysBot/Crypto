@@ -15,7 +15,7 @@ menu_message = """
 编码解码功能如下：
 1. b64d 解码base64
 2. b64e 编码base64
-3. md5e 编码MD5
+3. hash 哈希值计算
 4. bin2all 二进制转其他
 5. oct2all 八进制转其他
 6. dec2all 十进制转其他
@@ -67,12 +67,16 @@ async def handle_crypto_group_message(websocket, msg):
             encoded_message = base64.b64encode(decoded_message.encode()).decode()
             encoded_message = f"[CQ:at,qq={user_id}]编码结果如下\n{encoded_message}"
             await send_group_msg(websocket, group_id, encoded_message)
-        # MD5 编码
-        elif raw_message.startswith("md5e "):
-            message = raw_message[len("md5e ") :]
+
+        # 哈希校验
+        elif raw_message.startswith("hash "):
+            message = raw_message[len("hash ") :]
             md5_encoded = hashlib.md5(message.encode()).hexdigest()
-            md5_encoded_message = f"[CQ:at,qq={user_id}]MD5编码结果如下\n{md5_encoded}"
-            await send_group_msg(websocket, group_id, md5_encoded_message)
+            sha1_encoded = hashlib.sha1(message.encode()).hexdigest()
+            sha256_encoded = hashlib.sha256(message.encode()).hexdigest()
+            sha512_encoded = hashlib.sha512(message.encode()).hexdigest()
+            encoded_message = f"[CQ:at,qq={user_id}]哈希结果如下\nMD5: {md5_encoded}\nSHA1: {sha1_encoded}\nSHA256: {sha256_encoded}\nSHA512: {sha512_encoded}"
+            await send_group_msg(websocket, group_id, encoded_message)
         # 进制转换
         elif raw_message.startswith("bin2all "):
             binary_number = raw_message[len("bin2all ") :]
