@@ -3,7 +3,9 @@ import logging
 import re
 import os
 import sys
-import hashlib  # 新增
+import hashlib
+import random
+import string
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,6 +22,7 @@ menu_message = """
 5. oct2all 八进制转其他
 6. dec2all 十进制转其他
 7. hex2all 十六进制转其他
+8. genpass 生成强密码
 """
 
 
@@ -37,6 +40,19 @@ async def handle_crypto_help_message_private(websocket, user_id):
         user_id,
         menu_message,
     )
+
+
+def generate_password(length, complexity):
+    if complexity == 1:
+        chars = string.ascii_lowercase + string.digits
+    elif complexity == 2:
+        chars = string.ascii_letters + string.digits
+    elif complexity == 3:
+        chars = string.ascii_letters + string.digits + string.punctuation
+    else:
+        raise ValueError("无效的复杂度等级")
+
+    return "".join(random.choice(chars) for _ in range(length))
 
 
 async def handle_crypto_group_message(websocket, msg):
@@ -101,6 +117,24 @@ async def handle_crypto_group_message(websocket, msg):
             await send_group_msg(
                 websocket, group_id, format_conversion_message(user_id, decimal_number)
             )
+        # 生成强密码
+        elif raw_message.startswith("genpass "):
+            try:
+                parts = raw_message.split()
+                length = int(parts[1])
+                complexity = int(parts[2])
+                password = generate_password(length, complexity)
+                await send_group_msg(
+                    websocket,
+                    group_id,
+                    f"[CQ:at,qq={user_id}]生成的密码如下\n{password}",
+                )
+            except (IndexError, ValueError):
+                await send_group_msg(
+                    websocket,
+                    group_id,
+                    "无效的命令格式。正确格式：genpass <长度> <复杂度>\n长度：1-100\n复杂度：1-3",
+                )
 
     except Exception as e:
         logging.error(f"处理编解码消息失败: {e}")
@@ -162,6 +196,22 @@ async def handle_crypto_private_message(websocket, msg):
             await send_private_msg(
                 websocket, user_id, format_conversion_message(user_id, decimal_number)
             )
+        # 生成强密码
+        elif raw_message.startswith("genpass "):
+            try:
+                parts = raw_message.split()
+                length = int(parts[1])
+                complexity = int(parts[2])
+                password = generate_password(length, complexity)
+                await send_private_msg(
+                    websocket, user_id, f"生成的密码如下\n{password}"
+                )
+            except (IndexError, ValueError):
+                await send_private_msg(
+                    websocket,
+                    user_id,
+                    "无效的命令格式。正确格式：genpass <长度> <复杂度>",
+                )
 
     except Exception as e:
         logging.error(f"处理编解码消息失败: {e}")
