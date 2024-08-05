@@ -13,8 +13,7 @@ sys.path.append(
 
 from app.api import send_group_msg, send_private_msg
 
-menu_message = """
-编码解码功能如下：
+menu_message = """编码解码功能如下：
 1. b64d 解码base64
 2. b64e 编码base64
 3. hash 哈希值计算
@@ -22,8 +21,7 @@ menu_message = """
 5. oct2all 八进制转其他
 6. dec2all 十进制转其他
 7. hex2all 十六进制转其他
-8. genpass 生成强密码
-"""
+8. genpass 生成强密码"""
 
 
 async def handle_crypto_help_message_group(websocket, group_id, user_id):
@@ -146,7 +144,7 @@ async def handle_crypto_private_message(websocket, msg):
         user_id = msg["user_id"]
         raw_message = msg["raw_message"]
 
-        if raw_message == "编码解码":
+        if raw_message == "Crypto":
             await handle_crypto_help_message_private(websocket, user_id)
             return
 
