@@ -12,6 +12,7 @@ sys.path.append(
 )
 
 from app.api import send_group_msg, send_private_msg
+from app.switch import load_switch, save_switch
 
 menu_message = """编码解码功能如下：
 1. b64d 解码base64
