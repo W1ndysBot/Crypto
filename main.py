@@ -222,3 +222,57 @@ def format_conversion_message(user_id, decimal_number):
     octal = oct(decimal_number)[2:]
     hexadecimal = hex(decimal_number)[2:]
     return f"[CQ:at,qq={user_id}]转换结果如下\n二进制：{binary}\n八进制：{octal}\n十进制：{decimal_number}\n十六进制：{hexadecimal}"
+
+
+# 统一事件处理入口
+async def handle_events(websocket, msg):
+    """统一事件处理入口"""
+    try:
+        # 处理回调事件
+        if msg.get("status") == "ok":
+            ...
+
+        post_type = msg.get("post_type")
+
+        # 处理元事件
+        if post_type == "meta_event":
+            ...
+
+        # 处理消息事件
+        elif post_type == "message":
+            message_type = msg.get("message_type")
+            if message_type == "group":
+                await handle_crypto_group_message(websocket, msg)
+            elif message_type == "private":
+                await handle_crypto_private_message(websocket, msg)
+
+        # 处理通知事件
+        elif post_type == "notice":
+            if msg.get("notice_type") == "group":
+                ...
+
+    except Exception as e:
+        error_type = {
+            "message": "消息",
+            "notice": "通知",
+            "request": "请求",
+            "meta_event": "元事件",
+        }.get(post_type, "未知")
+
+        logging.error(f"处理Crypto{error_type}事件失败: {e}")
+
+        # 发送错误提示
+        if post_type == "message":
+            message_type = msg.get("message_type")
+            if message_type == "group":
+                await send_group_msg(
+                    websocket,
+                    msg.get("group_id"),
+                    f"处理Crypto{error_type}事件失败，错误信息：{str(e)}",
+                )
+            elif message_type == "private":
+                await send_private_msg(
+                    websocket,
+                    msg.get("user_id"),
+                    f"处理Crypto{error_type}事件失败，错误信息：{str(e)}",
+                )
